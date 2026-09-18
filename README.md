@@ -54,9 +54,9 @@ Active AWS hackathon MVP. Milestone 1 local vertical slice works today:
 - deterministic lexical context selection
 - `o200k_base` token accounting, explicitly labelled as a proxy
 - golden-path, security, storage-contract and fixture-shape tests
+- DynamoDB and S3 adapters on the M2 backend branch, with opt-in AWS tests
 
-AWS adapters, Bedrock, AgentCore, MCP, semantic retrieval and frontend are
-future work. No benchmark improvement is claimed yet.
+Bedrock, AgentCore, MCP, semantic retrieval and frontend remain future work.
 
 ## Example
 
@@ -85,9 +85,8 @@ context selection + token budget
       ^
 Storage and EvidenceStore ports
       ^
-Local SQLite adapter today
+Local SQLite adapter today; AWS DynamoDB/S3 adapters on `bhuvan/aws-storage`
       ^
-DynamoDB/S3 adapters later
 ```
 
 Milestone 1 intentionally keeps one Rust crate. Internal module extraction
@@ -131,8 +130,7 @@ cargo test --workspace
 
 ## Roadmap
 
-Next review boundary: AWS-backed implementations of the existing structured
-and raw-evidence ports, followed by the same behavioral contract tests.
+M2 AWS-backed implementations are on `bhuvan/aws-storage`; the next review boundary is explicit cloud contract verification.
 
 Later candidates: Bedrock-assisted extraction or ranking, AgentCore
 integration, MCP, frontend, and controlled A/B/C benchmarking. None are

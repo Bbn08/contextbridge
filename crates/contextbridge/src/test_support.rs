@@ -5,11 +5,19 @@ use crate::{
 /// Reusable behavioral contract for structured and evidence adapters.
 /// Future AWS adapter tests should call this with the same assertions.
 pub async fn storage_contract<S: Storage>(storage: &S) -> Result<(), DomainError> {
-    let alpha = WorkspaceId("contract-alpha".into());
-    let beta = WorkspaceId("contract-beta".into());
+    storage_contract_named(storage, "local").await
+}
+
+/// Same contract with caller-provided workspace suffix for isolated AWS tests.
+pub async fn storage_contract_named<S: Storage>(
+    storage: &S,
+    namespace: &str,
+) -> Result<(), DomainError> {
+    let alpha = WorkspaceId(format!("contract-alpha-{namespace}"));
+    let beta = WorkspaceId(format!("contract-beta-{namespace}"));
     let agent = AgentId("contract-agent".into());
     let event = EventInput {
-        event_id: Some(EventId("contract-event".into())),
+        event_id: Some(EventId(format!("contract-event-{namespace}"))),
         kind: MemoryKind::Finding,
         subject: Some("storage".into()),
         content: "Local storage preserves evidence.".into(),

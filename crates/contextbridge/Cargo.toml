@@ -4,6 +4,9 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+aws-config = { version = "=1.5.10", default-features = false, features = ["rustls", "rt-tokio"] }
+aws-sdk-dynamodb = "=1.54.0"
+aws-sdk-s3 = "=1.54.0"
 async-trait = "0.1"
 axum = "0.8"
 blake3 = "1"
@@ -19,3 +22,6 @@ uuid = { version = "1", features = ["v4", "serde"] }
 [dev-dependencies]
 http-body-util = "0.1"
 tower = { version = "0.5", features = ["util"] }
+
+[features]
+aws-tests = []
