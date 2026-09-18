@@ -1,0 +1,10 @@
+{
+  "request_id": "ctx-1",
+  "workspace_id": "demo",
+  "query": "Implement persistence",
+  "summary": "Persistence uses DynamoDB; Redis is historical.",
+  "current_state": [{"key":"persistence","value":"DynamoDB","memory_id":"mem-dynamo"}],
+  "evidence": [{"evidence_id":"mem-dynamo","kind":"decision","content":"DynamoDB superseded Redis. Reason: X.","source_agent":"agent-a","observed_at":"2026-09-18T10:00:00Z","status":"active","reasons":["subject match","current decision"],"estimated_tokens":24,"raw_handle":"memory://demo/mem-dynamo/raw"}],
+  "token_usage": {"budget":1000,"estimated":47,"tokenizer":"declared-estimator-v0"},
+  "diagnostics": {"excluded_superseded":["mem-redis"],"retrieval_methods":["structured","lexical"]}
+}

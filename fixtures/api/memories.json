@@ -1,0 +1,7 @@
+{
+  "items": [
+    {"id":"mem-dynamo","workspace_id":"demo","kind":"decision","subject":"persistence","content":"DynamoDB superseded Redis. Reason: X.","status":"active","source_agent":"agent-a","raw_handle":"memory://demo/mem-dynamo/raw"},
+    {"id":"mem-redis","workspace_id":"demo","kind":"decision","subject":"persistence","content":"Use Redis for persistence.","status":"historical","superseded_by":"mem-dynamo","source_agent":"agent-a","raw_handle":"memory://demo/mem-redis/raw"}
+  ],
+  "next_cursor": null
+}

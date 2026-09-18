@@ -1,0 +1,11 @@
+{
+  "workspace_id": "demo",
+  "session_id": "session-a",
+  "events": [{
+    "event_id": "evt-1",
+    "type": "DECISION",
+    "summary": "Persistence migrated from Redis to DynamoDB because X.",
+    "occurred_at": "2026-09-18T10:00:00Z",
+    "metadata": {"subject":"persistence","chosen":"DynamoDB","supersedes":"redis-decision"}
+  }]
+}
