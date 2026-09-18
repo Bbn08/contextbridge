@@ -2,9 +2,40 @@
   "request_id": "ctx-1",
   "workspace_id": "demo",
   "query": "Implement persistence",
-  "summary": "Persistence uses DynamoDB; Redis is historical.",
-  "current_state": [{"key":"persistence","value":"DynamoDB","memory_id":"mem-dynamo"}],
-  "evidence": [{"evidence_id":"mem-dynamo","kind":"decision","content":"DynamoDB superseded Redis. Reason: X.","source_agent":"agent-a","observed_at":"2026-09-18T10:00:00Z","status":"active","reasons":["subject match","current decision"],"estimated_tokens":24,"raw_handle":"memory://demo/mem-dynamo/raw"}],
-  "token_usage": {"budget":1000,"estimated":47,"tokenizer":"declared-estimator-v0"},
-  "diagnostics": {"excluded_superseded":["mem-redis"],"retrieval_methods":["structured","lexical"]}
+  "summary": "DynamoDB superseded Redis. Reason: X.",
+  "current_state": [
+    {
+      "key": "persistence",
+      "value": "DynamoDB superseded Redis. Reason: X.",
+      "memory_id": "mem-dynamo"
+    }
+  ],
+  "evidence": [
+    {
+      "memory_id": "mem-dynamo",
+      "evidence_id": "evidence-dynamo",
+      "subject": "persistence",
+      "kind": "decision",
+      "content": "DynamoDB superseded Redis. Reason: X.",
+      "provenance": {
+        "source_agent": "agent-a",
+        "event_id": "evt-dynamo",
+        "observed_at": "2026-09-18T10:00:00Z"
+      },
+      "reasons": [
+        "workspace match",
+        "2 query term matches",
+        "current truth"
+      ],
+      "estimated_tokens": 9,
+      "raw_handle": "artifact://demo/hash-dynamo",
+      "status": "current"
+    }
+  ],
+  "token_usage": {
+    "budget": 1000,
+    "selected": 9,
+    "tokenizer": "o200k_base",
+    "is_proxy": true
+  }
 }

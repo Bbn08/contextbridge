@@ -1,50 +1,89 @@
 # API contract v0.1
 
-Base path `/v1`. JSON. IDs are opaque strings. All workspace-scoped endpoints require authenticated server-derived agent identity. Mock responses live in `fixtures/api/`.
+Base path `/v1`. JSON. Workspace-scoped endpoints require a bearer token.
+Agent identity is derived server-side; clients must not send `agent_id`.
 
 ## `POST /v1/events`
 
-Request:
-
 ```json
-{"workspace_id":"demo","session_id":"session-a","events":[{"event_id":"evt-1","type":"DECISION","summary":"Persistence migrated from Redis to DynamoDB because X.","occurred_at":"2026-09-18T10:00:00Z","metadata":{"subject":"persistence","chosen":"DynamoDB","supersedes":"redis-decision"}}]}
+{"workspace_id":"demo","session_id":"session-a","events":[{"event_id":"evt-1","kind":"decision","subject":"persistence","content":"Persistence uses DynamoDB because X.","promote":true,"raw_evidence":"full evidence","supersedes_memory_id":null}]}
 ```
 
-Response returns per-event `accepted`, `promotion`, `memory_id`, `deduplicated` and `raw_handle`. Client `agent_id` is ignored/rejected; auth derives it.
+Response:
+
+```json
+[{"event_id":"evt-1","promoted_memory_id":"mem-dynamo","raw_handle":{"handle":"artifact://demo/hash","evidence_id":"evidence-1"}}]
+```
+
+Events remain separate from memories unless `promote` is true. Explicit event IDs
+are unique; a duplicate returns `409 conflict`.
 
 ## `POST /v1/memories`
 
-Creates explicit typed knowledge. Required: workspace, `kind`, `content`. Optional: subject, status (`active|historical|stale|contested`), confidence, source event, raw handle, tags, observed time.
+Creates explicit typed knowledge. Required: `workspace_id`, `kind`, `content`.
+Optional: `subject`, `raw_evidence`.
 
-## `GET /v1/memories?workspace_id=demo&kind=decision&status=active`
+`kind`: `decision | finding | constraint | task | state`.
 
-Returns bounded list with current status and provenance. Default excludes historical/stale unless requested.
+## `GET /v1/memories?workspace_id=demo&status=current&limit=100`
+
+Returns serialized `Memory` objects. `status` may be `current`, `superseded`,
+`stale`, or `conflicted`. Omit it to list all workspace memories.
+
+Each memory contains nested `provenance` and `evidence` objects. Historical
+memories remain retrievable.
 
 ## `GET /v1/activity?workspace_id=demo&limit=50`
 
-Returns event activity and promotion outcomes, never raw secrets.
+Returns event records and promotion outcomes. Raw content is not included.
 
 ## `POST /v1/context`
 
 Request:
 
 ```json
-{"workspace_id":"demo","query":"Implement persistence","max_tokens":1000,"include":{"current_state":true,"decisions":true,"evidence":true}}
+{"workspace_id":"demo","query":"Implement persistence","max_tokens":1000}
 ```
 
-Response:
+Response shape:
 
 ```json
-{"request_id":"ctx-1","workspace_id":"demo","query":"Implement persistence","summary":"Persistence uses DynamoDB; Redis is historical.","current_state":[{"key":"persistence","value":"DynamoDB","memory_id":"mem-dynamo"}],"evidence":[{"evidence_id":"mem-dynamo","kind":"decision","content":"DynamoDB superseded Redis. Reason: X.","source_agent":"agent-a","observed_at":"2026-09-18T10:00:00Z","status":"active","reasons":["subject match","current decision"],"estimated_tokens":24,"raw_handle":"memory://demo/mem-dynamo/raw"}],"token_usage":{"budget":1000,"estimated":47,"tokenizer":"declared-estimator-v0"},"diagnostics":{"excluded_superseded":["mem-redis"],"retrieval_methods":["structured","lexical"]}}
+{"request_id":"ctx-1","workspace_id":"demo","query":"Implement persistence","summary":"DynamoDB superseded Redis. Reason: X.","current_state":[{"key":"persistence","value":"DynamoDB superseded Redis. Reason: X.","memory_id":"mem-dynamo"}],"evidence":[{"memory_id":"mem-dynamo","evidence_id":"evidence-dynamo","subject":"persistence","kind":"decision","content":"DynamoDB superseded Redis. Reason: X.","provenance":{"source_agent":"agent-a","event_id":"evt-dynamo","observed_at":"2026-09-18T10:00:00Z"},"reasons":["workspace match","2 query term matches","current truth"],"estimated_tokens":9,"raw_handle":"artifact://demo/hash-dynamo","status":"current"}],"token_usage":{"budget":1000,"selected":9,"tokenizer":"o200k_base","is_proxy":true}}
 ```
 
-The backend must never claim exact model tokens when tokenizer is unavailable. `tokenizer` names measurement method.
+Selection is deterministic lexical matching over current memories in the
+requested workspace. Superseded memories are excluded from current context.
+Token usage counts selected evidence content with `o200k_base`; it is a labelled
+proxy and does not count full serialized packet overhead.
 
 ## `POST /v1/memories/{id}/supersede`
 
-Request: `{"replacement_memory_id":"mem-dynamo","reason":"DynamoDB is current persistence."}`. Response links both records and marks old record historical. Operation is idempotent and workspace-scoped.
+Request:
 
-## Compatibility rules
+```json
+{"workspace_id":"demo","replacement_memory_id":"mem-dynamo","reason":"DynamoDB is current persistence."}
+```
 
-Unknown response fields may be added. Required fields and enum meanings cannot change without contract versioning. Breaking changes update this file and all fixtures before backend implementation.
+The old memory becomes `superseded`; replacement must be `current`. Both remain
+provenance-preserving and workspace-scoped. Repeating the same supersession is
+idempotent. Cross-workspace and missing targets fail.
 
+## `GET /v1/evidence/{hash}?workspace_id=demo`
+
+Returns raw evidence bytes for a handle such as
+`artifact://demo/<blake3-hash>`. Access requires bearer authentication and the
+workspace query parameter.
+
+## Errors
+
+```json
+{"error":{"code":"conflict","message":"..."}}
+```
+
+`401` unauthorized; `400` malformed/unsupported input; `404` missing memory or
+evidence; `409` conflict or workspace violation; `500` local storage failure.
+
+## Compatibility
+
+Unknown response fields may be added. Required fields and enum meanings require
+contract and fixture updates before breaking changes.

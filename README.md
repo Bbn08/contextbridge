@@ -1,32 +1,144 @@
 # ContextBridge
 
-Shared project intelligence for independent AI agents.
+Shared project intelligence for independent AI agents: preserve project
+knowledge once, then give each agent the smallest useful task-specific slice.
 
-ContextBridge receives agent events, promotes valuable knowledge into typed project memories, tracks current state and supersession, then builds a bounded task-specific context packet. It gives agents the smallest useful slice of collective knowledge while keeping raw evidence recoverable.
+## Problem
 
-## Golden path
+Independent agents working on one project repeatedly rediscover decisions,
+state, failures and prior work. Sharing entire conversations fixes recall by
+creating noise, stale truth and unnecessary context.
 
-1. Agent A emits an event.
-2. ContextBridge records identity, workspace, timestamp and provenance.
-3. Policy promotes valuable evidence into a typed memory or decision.
-4. Agent B requests context for a task.
-5. ContextBridge selects current, relevant evidence within the requested token budget.
-6. Agent B receives source and raw handles, not Agent A's whole conversation.
+## What ContextBridge does
 
-## Status
+```text
+Agent A event
+    |
+    v
+ContextBridge event + provenance
+    |
+    v
+current typed project knowledge
+    |
+    v
+bounded task context packet
+    |
+    v
+Agent B continues without Agent A's conversation
+```
 
-Repository initialized at contract/reconnaissance stage. No product crate exists yet. See [docs/roadmap.md](docs/roadmap.md) and [docs/decisions/0001-initial-boundaries.md](docs/decisions/0001-initial-boundaries.md).
+ContextBridge keeps event history separate from promoted memory. Current
+knowledge can supersede historical decisions, while raw evidence remains
+recoverable through stable handles.
 
-## Principles
+## Core principles
 
-- Correctness and required-evidence recall outrank token reduction.
-- Compress visibility, not information.
-- Every lossy representation needs recoverable raw evidence.
-- Deterministic selection first; model assistance only where it adds measured value.
-- Current truth must be distinguishable from superseded history.
-- Project isolation and server-derived agent identity are security invariants.
+- Current truth over stale history
+- Provenance on shared knowledge
+- Bounded, task-specific context
+- Workspace isolation
+- Raw evidence recoverability
+- Deterministic-first selection
+- Correctness before token reduction
 
-## Local development
+## Current status
 
-The workspace intentionally has no crates until the first approved implementation milestone. Frontend and benchmark work can begin against [docs/api-contract.md](docs/api-contract.md) and [fixtures/api](fixtures/api).
+Active AWS hackathon MVP. Milestone 1 local vertical slice works today:
 
+- Rust/Axum API with bearer-token, server-derived agent identity
+- SQLite structured persistence behind `Storage`
+- raw evidence behind `EvidenceStore`, content-addressed with BLAKE3
+- event retention and deterministic promotion
+- typed memories and decision supersession
+- workspace isolation
+- deterministic lexical context selection
+- `o200k_base` token accounting, explicitly labelled as a proxy
+- golden-path, security, storage-contract and fixture-shape tests
+
+AWS adapters, Bedrock, AgentCore, MCP, semantic retrieval and frontend are
+future work. No benchmark improvement is claimed yet.
+
+## Example
+
+Agent A records:
+
+```text
+Persistence uses Redis.
+```
+
+Agent B asks for persistence context and receives Redis with Agent A
+provenance. Agent A later records:
+
+```text
+Persistence uses DynamoDB.
+```
+
+DynamoDB becomes current truth. Redis remains historical and recoverable, but
+is not presented as current context.
+
+## Architecture
+
+```text
+domain/API types
+      ^
+context selection + token budget
+      ^
+Storage and EvidenceStore ports
+      ^
+Local SQLite adapter today
+      ^
+DynamoDB/S3 adapters later
+```
+
+Milestone 1 intentionally keeps one Rust crate. Internal module extraction
+will follow stable ownership boundaries, not directory aesthetics.
+
+## Run locally
+
+Requires Rust and Cargo.
+
+```bash
+cargo run -p contextbridge
+```
+
+The server listens on `127.0.0.1:3000`. Local bearer tokens are
+`agent-a-token` and `agent-b-token`. The default database is
+`data/contextbridge.db`; runtime data is ignored by Git.
+
+## API
+
+See [docs/api-contract.md](docs/api-contract.md) and
+[docs/frontend-handoff.md](docs/frontend-handoff.md).
+
+- `POST /v1/events`
+- `POST /v1/memories`
+- `GET /v1/memories`
+- `GET /v1/activity`
+- `POST /v1/context`
+- `POST /v1/memories/{id}/supersede`
+- `GET /v1/evidence/{hash}`
+- `GET /health`
+
+API fixtures are under [fixtures/api](fixtures/api).
+
+## Testing
+
+```bash
+cargo fmt --check
+cargo clippy --workspace --all-targets --all-features -- -D warnings
+cargo test --workspace
+```
+
+## Roadmap
+
+Next review boundary: AWS-backed implementations of the existing structured
+and raw-evidence ports, followed by the same behavioral contract tests.
+
+Later candidates: Bedrock-assisted extraction or ranking, AgentCore
+integration, MCP, frontend, and controlled A/B/C benchmarking. None are
+implemented or claimed here.
+
+## License
+
+Project license decision is pending. No third-party source code has been copied
+into this repository. See [docs/provenance.md](docs/provenance.md).

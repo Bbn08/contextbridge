@@ -27,7 +27,7 @@ benchmark fixtures ───────> golden-path tests + result dashboard
 4. Integrate live API when stable; report observed metrics only.
 5. Prepare technical narrative with provenance and limitations.
 
-## First implementation milestone
+## First implementation milestone — complete
 
 Local vertical slice: two agents, one workspace, event ingestion, decision promotion, explicit supersession, context response under budget, raw handle recovery, and fixture-backed contract tests. No embeddings, Bedrock, MCP, dashboard polish or deployment required.
 

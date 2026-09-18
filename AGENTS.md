@@ -7,7 +7,7 @@ Build shared project intelligence for independent AI agents. The product's proof
 ## Repository boundaries
 
 - Work only in `contextbridge/`.
-- `/home/bhuvan/AwsHack/second-brain` and `/home/bhuvan/AwsHack/effimiser` are read-only references. Never edit, format, reset, clean, stash, checkout, commit, or generate files there.
+- `../second-brain` and `../effimiser` are read-only references. Never edit, format, reset, clean, stash, checkout, commit, or generate files there.
 - Do not copy reference code, tests, fixtures, comments, or data without an explicit provenance and license decision.
 - Prefer clean-room adaptation of observed behavior.
 

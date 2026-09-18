@@ -1,0 +1,1 @@
+{"workspace_id":"demo","kind":"finding","subject":"persistence","content":"DynamoDB table exists.","raw_evidence":"Full finding evidence"}

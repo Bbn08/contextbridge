@@ -1,0 +1,18 @@
+[
+  {
+    "event": {
+      "event_id": "evt-1",
+      "workspace_id": "demo",
+      "agent_id": "agent-a",
+      "kind": "decision",
+      "content": "Persistence uses DynamoDB because X.",
+      "promoted_memory_id": "mem-dynamo",
+      "received_at": "2026-09-18T10:00:00Z"
+    },
+    "outcome": {
+      "event_id": "evt-1",
+      "promoted_memory_id": "mem-dynamo",
+      "raw_handle": null
+    }
+  }
+]

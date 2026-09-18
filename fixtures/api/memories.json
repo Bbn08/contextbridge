@@ -1,7 +1,41 @@
 {
   "items": [
-    {"id":"mem-dynamo","workspace_id":"demo","kind":"decision","subject":"persistence","content":"DynamoDB superseded Redis. Reason: X.","status":"active","source_agent":"agent-a","raw_handle":"memory://demo/mem-dynamo/raw"},
-    {"id":"mem-redis","workspace_id":"demo","kind":"decision","subject":"persistence","content":"Use Redis for persistence.","status":"historical","superseded_by":"mem-dynamo","source_agent":"agent-a","raw_handle":"memory://demo/mem-redis/raw"}
+    {
+      "id": "mem-dynamo",
+      "workspace_id": "demo",
+      "kind": "decision",
+      "subject": "persistence",
+      "content": "DynamoDB superseded Redis. Reason: X.",
+      "status": "current",
+      "provenance": {
+        "source_agent": "agent-a",
+        "event_id": "evt-dynamo",
+        "observed_at": "2026-09-18T10:00:00Z"
+      },
+      "evidence": {
+        "handle": "artifact://demo/hash-dynamo",
+        "evidence_id": "evidence-dynamo"
+      },
+      "superseded_by": null
+    },
+    {
+      "id": "mem-redis",
+      "workspace_id": "demo",
+      "kind": "decision",
+      "subject": "persistence",
+      "content": "Use Redis for persistence.",
+      "status": "superseded",
+      "provenance": {
+        "source_agent": "agent-a",
+        "event_id": "evt-redis",
+        "observed_at": "2026-09-17T10:00:00Z"
+      },
+      "evidence": {
+        "handle": "artifact://demo/hash-redis",
+        "evidence_id": "evidence-redis"
+      },
+      "superseded_by": "mem-dynamo"
+    }
   ],
   "next_cursor": null
 }

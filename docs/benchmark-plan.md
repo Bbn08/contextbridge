@@ -26,3 +26,10 @@ Each JSONL row includes `run_id`, `arm`, `task_id`, `model`, `repo_revision`, `e
 
 Seed Agent A with Redis-to-DynamoDB decision and evidence. Start Agent B independently with “Implement persistence”. Assert C presents DynamoDB current, excludes Redis from current state, retains supersession history, includes raw handle, and stays within budget.
 
+
+
+## Milestone 1 measurement boundary
+
+The local packet reports `o200k_base` with `is_proxy: true`. It counts selected
+evidence content, not complete serialized packet overhead. This is suitable for
+bounded local selection, not provider-exact billing or savings claims.

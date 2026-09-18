@@ -1,5 +1,34 @@
-/target/
+# Secrets and local configuration
 .env
+.env.*
+!.env.example
 .aws/
+*.pem
+*.key
+
+# Rust build output
+/target/
+
+# Local databases and runtime evidence
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+/data/
+/artifacts/
+/evidence/
 *.log
 
+# Coverage, benchmark output, temporary files
+/coverage/
+/benchmarks/results/
+/tmp/
+*.tmp
+
+# Editor and OS files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp

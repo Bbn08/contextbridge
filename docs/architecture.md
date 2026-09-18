@@ -48,3 +48,16 @@ L0 active agent context; L1 compiled packet; L2 typed shared state; L3 raw evide
 
 No universal score is required in MVP. Selection reasons must be explicit.
 
+
+## Milestone 1 implementation boundary
+
+The current crate keeps the implementation compact but exposes two ports:
+
+- `Storage`: events, memories, activity and supersession.
+- `EvidenceStore`: content-addressed raw evidence insertion and recovery.
+
+`LocalSqliteStorage` implements both ports today. Future DynamoDB and S3
+adapters must satisfy the same behavior without entering domain types.
+
+Context packet token usage counts selected evidence content with `o200k_base`.
+It is a labelled proxy and does not count complete serialized packet overhead.

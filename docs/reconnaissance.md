@@ -4,7 +4,7 @@ Date: 2026-09-18. Read-only inspection completed before ContextBridge creation.
 
 ## Workspace
 
-- Working directory: `/home/bhuvan/AwsHack`.
+- Working directory: workspace root.
 - `second-brain/` and `effimiser/` existed; `contextbridge/` was missing, then created.
 - Reference repositories were not modified. Pre-existing worktree state preserved.
 
