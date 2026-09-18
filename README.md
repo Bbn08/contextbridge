@@ -140,7 +140,7 @@ implemented or claimed here.
 
 ## License
 
-Project license decision is pending. No third-party source code has been copied
+ContextBridge is licensed under the [Apache License 2.0](LICENSE). No third-party source code has been copied
 into this repository. See [docs/provenance.md](docs/provenance.md).
 
 ## Team workspaces

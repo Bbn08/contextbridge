@@ -21,6 +21,7 @@ Every packet item records `evidence_id`, source agent, observed time, memory/eve
 ## License posture
 
 `effimiser` declares Apache-2.0 and contains `LICENSE`/`NOTICE`; direct reuse is legally possible with attribution, but clean-room reimplementation remains preferred. `second-brain` has no verified project license in inspected root; treat it as internal reference, not distributable source. Current ContextBridge reuses no reference code.
+ContextBridge is licensed under Apache-2.0. This license applies to ContextBridge own work; it does not imply that ContextBridge is derived from Effimiser.
 
 If direct code enters ContextBridge, record file origin, commit, copyright/license text and NOTICE update in the same change. Do not copy fixtures or comments by default.
 
