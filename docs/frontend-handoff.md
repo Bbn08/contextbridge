@@ -13,3 +13,11 @@ Base URL is local service root. Protected endpoints require `Authorization: Bear
 | `GET /v1/evidence/{hash}?workspace_id=demo` | recover raw bytes | handle from context packet |
 
 Errors use `{ "error": { "code": "...", "message": "..." } }`. `401` means invalid bearer token; `400` malformed/unsupported input; `404` missing memory/evidence; `409` conflict or isolation violation.
+
+
+## Primary product surface
+
+Context Inspector is the first user-facing experience. Show Agent B, task,
+budget, current project state, selected context, selection reasons, Agent A
+provenance, raw handle and selected/budget token usage. Build from fixtures;
+backend deployment is not required. See [`../demo/golden-path.md`](demo/golden-path.md).

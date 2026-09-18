@@ -39,3 +39,16 @@ Validate workspace scope, request sizes, handles and paths. Do not persist secre
 
 Keep commits narrow and runnable. Explain material architecture decisions in `docs/decisions/`. Stop at the requested cut line; do not build speculative features.
 
+
+## Monorepo ownership
+
+ContextBridge is one repository. Keep one Rust crate until dependency boundaries justify a split.
+
+- Bhuvan owns `crates/`, backend/API/auth, domain semantics, context selection, storage/evidence ports, future AWS work, infrastructure and integrations.
+- Prathick owns `apps/web/`, product UX, Context Inspector and `benchmarks/`.
+- Shared ownership: `fixtures/api/`, `docs/api-contract.md`, `docs/frontend-handoff.md`, `docs/benchmark-plan.md` and `docs/demo/`.
+- Add only directories with current purpose. Do not scaffold speculative `infra/`, `integrations/`, frontend source or benchmark runners.
+- Shared contract changes update implementation, docs, fixtures and relevant tests together.
+- Context Inspector is primary product surface: show what context was sent, why, provenance, current state, raw handle and token usage.
+- Benchmark claims require reproducible results. Correctness and required-evidence recall outrank token reduction.
+- Short-lived branches: `bhuvan/<feature>` or `prathick/<feature>`, merged into green `main`. Avoid long-lived develop/staging branches.

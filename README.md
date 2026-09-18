@@ -119,7 +119,7 @@ See [docs/api-contract.md](docs/api-contract.md) and
 - `GET /v1/evidence/{hash}`
 - `GET /health`
 
-API fixtures are under [fixtures/api](fixtures/api).
+API fixtures are under [fixtures/api](fixtures/api). Team ownership and parallel work are documented in [docs/ownership.md](docs/ownership.md). The primary future product surface is the [Context Inspector](docs/demo/golden-path.md).
 
 ## Testing
 
@@ -142,3 +142,9 @@ implemented or claimed here.
 
 Project license decision is pending. No third-party source code has been copied
 into this repository. See [docs/provenance.md](docs/provenance.md).
+
+## Team workspaces
+
+Prathick can start frontend fixture work in [`apps/web/`](apps/web/README.md).
+Benchmark specification lives in [`benchmarks/`](benchmarks/README.md). Bhuvan
+continues backend and future AWS work from the existing ports.

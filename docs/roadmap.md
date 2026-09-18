@@ -1,39 +1,36 @@
 # Roadmap and ownership
 
-## Parallel graph
+## Completed
 
-```text
-API contract + fixtures ─┬─> frontend/dashboard
-                        ├─> benchmark harness/scenarios
-                        └─> backend adapters
-reference/license report ─> core entity model
-core local service ───────> AWS adapters + MCP adapter
-benchmark fixtures ───────> golden-path tests + result dashboard
-```
+- **M0 — Recon / Architecture:** reference inspection, contracts, provenance and ownership boundaries.
+- **M1 — Local Vertical Slice:** local API, SQLite, events, typed memories, supersession, bounded context, provenance, raw recovery and tests.
 
-## Bhuvan
+## Bhuvan track
 
-1. Confirm entity/state model and implement local backend service.
-2. Implement event ingestion, promotion, provenance and supersession.
-3. Implement bounded context compiler and API.
-4. Add DynamoDB/S3 ports and one meaningful cloud path.
-5. Add MCP adapter and deployment only after local path passes.
+- **M2 — AWS Persistence:** DynamoDB structured storage and S3 evidence adapter, both passing existing behavioral contracts.
+- **M3 — Intelligence:** optional Bedrock extraction/compression/ranking behind `EvidenceStore`/intelligence boundaries.
+- **M4 — Agent Integration:** MCP and vendor-neutral agent adapters.
 
-## Prathick
+## Prathick track
 
-1. Build dashboard against fixtures and contract.
-2. Build benchmark runner and A/B/C result schema.
-3. Add golden-path scenario tests and correctness assertions.
-4. Integrate live API when stable; report observed metrics only.
-5. Prepare technical narrative with provenance and limitations.
+- **P1 — Frontend shell + fixture client**
+- **P2 — Context Inspector**
+- **P3 — Memories/activity/supersession UI**
+- **P4 — Benchmark harness**
+- **P5 — Demo and benchmark visualization**
+- **P6 — Submission/blog polish**
 
-## First implementation milestone — complete
+## Shared later milestone
 
-Local vertical slice: two agents, one workspace, event ingestion, decision promotion, explicit supersession, context response under budget, raw handle recovery, and fixture-backed contract tests. No embeddings, Bedrock, MCP, dashboard polish or deployment required.
+- **M5 — Multi-Agent Demo:** Bhuvan backend and Prathick Context Inspector show the same Redis-to-DynamoDB supersession semantics.
+- **M6 — Benchmark + Polish + Submission:** controlled A/B/C evaluation, demo hardening and submission material.
 
-## MVP cut line
+## Parallel work
 
-Must work: workspace isolation; server-derived agent identity; event ingestion; typed decision/current state; provenance/raw handle; supersession; bounded context packet; local persistence; API fixtures; A/B/C benchmark scenario; one meaningful AWS-backed path for demo.
+P1 can start now from `fixtures/api/`, `docs/api-contract.md` and
+`docs/frontend-handoff.md`. P2/P3 depend on the fixture client, not deployed
+backend. P4 can begin from the scenario specification without running yet.
+M2 depends only on the stable backend ports and contract tests; it does not
+block frontend fixture work.
 
-Drop if time runs short: semantic embeddings; automatic LLM extraction; AgentCore integration; code graph; generic MCP breadth; multi-region deployment; real-time activity polish; advanced conflict resolution; token-optimization claims.
-
+No stage claims performance improvement until measured artifacts exist.
