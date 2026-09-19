@@ -1,0 +1,18 @@
+{
+  "arm": "CONTEXTBRIDGE",
+  "task": "Implement persistence.",
+  "shared_context": {
+    "summary": "Persistence uses DynamoDB.",
+    "current_state": [
+      {"key": "persistence", "value": "Persistence uses DynamoDB.", "memory_id": "mem-dynamo"}
+    ],
+    "evidence": [{
+      "content": "Persistence uses DynamoDB.",
+      "status": "current",
+      "source_agent": "agent-a",
+      "reasons": ["CURRENT_STATE", "LEXICAL_MATCH"],
+      "raw_handle": "artifact://project-alpha/<hash>"
+    }]
+  },
+  "required_evidence": ["Persistence uses DynamoDB.", "Agent A provenance"]
+}
