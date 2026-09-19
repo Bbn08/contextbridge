@@ -12,10 +12,10 @@ Agent identity is derived server-side; clients must not send `agent_id`.
 Response:
 
 ```json
-[{"event_id":"evt-1","promoted_memory_id":"mem-dynamo","raw_handle":{"handle":"artifact://demo/hash","evidence_id":"evidence-1"}}]
+[{"event_id":"evt-1","outcome":"PROMOTED","promoted_memory_id":"mem-dynamo","raw_handle":{"handle":"artifact://demo/hash","evidence_id":"evidence-1"}}]
 ```
 
-Events remain separate from memories unless `promote` is true. Explicit event IDs
+Typed high-value events (decision, finding, constraint, task and state) are promoted deterministically even when `promote` is omitted; the flag remains a compatibility hint. Secret-like events are retained without promotion. Explicit event IDs
 are unique; a duplicate returns `409 conflict`.
 
 ## `POST /v1/memories`

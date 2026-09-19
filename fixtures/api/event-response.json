@@ -1,0 +1,11 @@
+[
+  {
+    "event_id": "evt-1",
+    "outcome": "PROMOTED",
+    "promoted_memory_id": "mem-dynamo",
+    "raw_handle": {
+      "handle": "artifact://demo/hash-dynamo",
+      "evidence_id": "evidence-dynamo"
+    }
+  }
+]

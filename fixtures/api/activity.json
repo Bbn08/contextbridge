@@ -11,6 +11,7 @@
     },
     "outcome": {
       "event_id": "evt-1",
+      "outcome": "PROMOTED",
       "promoted_memory_id": "mem-dynamo",
       "raw_handle": null
     }
