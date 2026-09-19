@@ -713,34 +713,15 @@ async fn post_events(
     let mut out = Vec::new();
     for e in p.events {
         let r = s.storage.append_event(&p.workspace_id, &a, &e).await?;
-        let mut o = EventOutcome {
-            event_id: r.event_id.clone(),
-            promoted_memory_id: None,
-            raw_handle: None,
-        };
-        if e.promote {
-            let m = s
-                .storage
-                .store_memory(
-                    &p.workspace_id,
-                    &a,
-                    Some(&r.event_id),
-                    &e.kind,
-                    e.subject.as_deref(),
-                    &e.content,
-                    e.raw_evidence.as_deref(),
-                )
+        let result =
+            promotion::PromotionEngine::process(s.storage.as_ref(), &p.workspace_id, &a, &r, &e)
                 .await?;
-            o.promoted_memory_id = Some(m.id.clone());
-            o.raw_handle = Some(m.evidence);
-            s.storage.mark_event_promoted(&r.event_id, &m.id).await?;
-            if let Some(old) = e.supersedes_memory_id {
-                s.storage
-                    .supersede(&p.workspace_id, &old, &m.id, "explicit event supersession")
-                    .await?;
-            }
-        }
-        out.push(o)
+        out.push(EventOutcome {
+            event_id: r.event_id,
+            outcome: result.status().into(),
+            promoted_memory_id: result.memory_id(),
+            raw_handle: result.raw_handle(),
+        });
     }
     Ok(Json(out))
 }
@@ -798,6 +779,32 @@ async fn post_supersede(
             .await?,
     ))
 }
+fn kind_priority(kind: &MemoryKind) -> usize {
+    match kind {
+        MemoryKind::Decision => 4,
+        MemoryKind::State => 3,
+        MemoryKind::Finding | MemoryKind::Constraint => 2,
+        MemoryKind::Task => 1,
+    }
+}
+
+fn context_identity(memory: &Memory) -> String {
+    format!(
+        "{}|{}|{}",
+        memory.kind.as_str(),
+        normalize_context(memory.subject.as_deref().unwrap_or_default()),
+        normalize_context(&memory.content)
+    )
+}
+
+fn normalize_context(value: &str) -> String {
+    value
+        .split_whitespace()
+        .collect::<Vec<_>>()
+        .join(" ")
+        .to_lowercase()
+}
+
 async fn post_context(
     State(s): State<AppState>,
     req: Request,
@@ -814,21 +821,45 @@ async fn post_context(
         .map(|x| x.trim_matches(|c: char| !c.is_alphanumeric()).to_string())
         .filter(|x| x.len() > 2)
         .collect();
-    let mut ranked: Vec<(usize, Memory)> = s
+    let mut ranked: Vec<(usize, usize, bool, DateTime<Utc>, Memory)> = s
         .storage
         .list_memories(&p.workspace_id, Some(&MemoryStatus::Current), 200)
         .await?
         .into_iter()
         .map(|m| {
-            let h = format!("{} {}", m.subject.as_deref().unwrap_or(""), m.content).to_lowercase();
-            (terms.iter().filter(|t| h.contains(t.as_str())).count(), m)
+            let subject = m.subject.as_deref().unwrap_or_default().to_lowercase();
+            let content = m.content.to_lowercase();
+            let score = terms
+                .iter()
+                .filter(|term| subject.contains(term.as_str()) || content.contains(term.as_str()))
+                .count();
+            let subject_match = terms.iter().any(|term| subject.contains(term.as_str()));
+            (
+                kind_priority(&m.kind),
+                score,
+                subject_match,
+                m.provenance.observed_at,
+                m,
+            )
         })
-        .filter(|x| x.0 > 0)
+        .filter(|entry| entry.1 > 0)
         .collect();
-    ranked.sort_by(|a, b| b.0.cmp(&a.0).then_with(|| a.1.id.0.cmp(&b.1.id.0)));
+    ranked.sort_by(|left, right| {
+        right
+            .0
+            .cmp(&left.0)
+            .then_with(|| right.1.cmp(&left.1))
+            .then_with(|| right.2.cmp(&left.2))
+            .then_with(|| right.3.cmp(&left.3))
+            .then_with(|| left.4.id.0.cmp(&right.4.id.0))
+    });
     let mut used = 0;
+    let mut seen = HashSet::new();
     let mut evidence = Vec::new();
-    for (score, m) in ranked {
+    for (priority, score, subject_match, _observed_at, m) in ranked {
+        if !seen.insert(context_identity(&m)) {
+            continue;
+        }
         let n = tokens(&m.content)?;
         if used + n > budget {
             continue;
@@ -836,8 +867,12 @@ async fn post_context(
         used += n;
         let mut reasons = vec![
             "workspace match".into(),
+            format!("kind priority: {priority}"),
             format!("{score} query term matches"),
         ];
+        if subject_match {
+            reasons.push("subject match".into());
+        }
         reasons.push("current truth".into());
         evidence.push(ContextEvidence {
             memory_id: m.id,
@@ -850,7 +885,7 @@ async fn post_context(
             estimated_tokens: n,
             raw_handle: m.evidence.handle,
             status: m.status,
-        })
+        });
     }
     let summary = evidence
         .iter()
