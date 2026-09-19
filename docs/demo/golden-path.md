@@ -1,6 +1,6 @@
 # Golden-path demo specification
 
-Shared Bhuvan/Prathick demo. Specification only; no automation added.
+Shared Bhuvan/Prathick demo. The verified local automation is `scripts/demo-local.sh`; AWS-backed execution remains pending M2.5.
 
 1. Agent A works independently.
 2. Agent A records `Persistence uses Redis.`
@@ -35,3 +35,10 @@ It should prioritize evidence, provenance, reasons, current-vs-historical state,
 raw recovery and budget over login, settings or decorative analytics.
 
 Later AWS-backed demos must preserve these exact semantics.
+## Run locally
+
+```bash
+bash scripts/demo-local.sh
+```
+
+The script starts an isolated local SQLite service, drives both bearer-token agents, prints both context packets, shows superseded Redis history, and recovers raw evidence.
