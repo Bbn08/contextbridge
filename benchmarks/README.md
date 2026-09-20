@@ -3,7 +3,7 @@
 Owner: Prathick. Bhuvan owns the backend observability and contract surfaces
 needed to measure the system.
 
-This directory contains benchmark specifications only. No benchmark has been
+This directory contains benchmark specifications and a preparation/execution harness. No benchmark has been
 run in Milestone 1. Do not add performance claims to product or README docs
 without reproducible raw results.
 
@@ -32,3 +32,12 @@ repeated reads, rediscovery operations, model-visible tokens, latency and raw
 evidence recovery.
 
 See [`scenarios/persistence-migration/SPEC.md`](scenarios/persistence-migration/SPEC.md).
+## Harness
+
+The runner prepares one controlled input fixture per arm and captures command output in a structured result. It does not invoke a model or claim results. Example:
+
+```bash
+benchmarks/runners/run-arm.sh --arm contextbridge --output /tmp/contextbridge-result.json -- ./your-agent-command
+```
+
+The command receives CONTEXTBRIDGE_BENCHMARK_ARM and CONTEXTBRIDGE_BENCHMARK_INPUT. The result keeps metric fields null until the evaluator records measured values. Use the same command, model, repository revision, environment and task for all three arms.

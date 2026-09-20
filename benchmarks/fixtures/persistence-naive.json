@@ -1,0 +1,11 @@
+{
+  "arm": "NAIVE",
+  "task": "Implement persistence.",
+  "shared_context": {
+    "history": [
+      {"content": "Persistence uses Redis.", "status": "historical"},
+      {"content": "Persistence uses DynamoDB.", "status": "current"}
+    ]
+  },
+  "required_evidence": ["Persistence uses DynamoDB.", "Agent A provenance"]
+}
