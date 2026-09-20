@@ -24,7 +24,9 @@
       },
       "reasons": [
         "workspace match",
-        "2 query term matches",
+        "kind priority: 4",
+        "1 query term matches",
+        "subject match",
         "current truth"
       ],
       "estimated_tokens": 9,
