@@ -1,0 +1,6 @@
+{
+  "arm": "COLD",
+  "task": "Implement persistence.",
+  "shared_context": null,
+  "required_evidence": ["Persistence uses DynamoDB.", "Agent A provenance"]
+}
