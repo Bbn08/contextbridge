@@ -1,5 +1,4 @@
-{
-  "items": [
+[
     {
       "id": "mem-dynamo",
       "workspace_id": "demo",
@@ -36,6 +35,4 @@
       },
       "superseded_by": "mem-dynamo"
     }
-  ],
-  "next_cursor": null
-}
+]
