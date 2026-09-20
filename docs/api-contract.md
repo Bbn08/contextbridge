@@ -48,11 +48,11 @@ Request:
 Response shape:
 
 ```json
-{"request_id":"ctx-1","workspace_id":"demo","query":"Implement persistence","summary":"DynamoDB superseded Redis. Reason: X.","current_state":[{"key":"persistence","value":"DynamoDB superseded Redis. Reason: X.","memory_id":"mem-dynamo"}],"evidence":[{"memory_id":"mem-dynamo","evidence_id":"evidence-dynamo","subject":"persistence","kind":"decision","content":"DynamoDB superseded Redis. Reason: X.","provenance":{"source_agent":"agent-a","event_id":"evt-dynamo","observed_at":"2026-09-18T10:00:00Z"},"reasons":["workspace match","2 query term matches","current truth"],"estimated_tokens":9,"raw_handle":"artifact://demo/hash-dynamo","status":"current"}],"token_usage":{"budget":1000,"selected":9,"tokenizer":"o200k_base","is_proxy":true}}
+{"request_id":"ctx-1","workspace_id":"demo","query":"Implement persistence","summary":"DynamoDB superseded Redis. Reason: X.","current_state":[{"key":"persistence","value":"DynamoDB superseded Redis. Reason: X.","memory_id":"mem-dynamo"}],"evidence":[{"memory_id":"mem-dynamo","evidence_id":"evidence-dynamo","subject":"persistence","kind":"decision","content":"DynamoDB superseded Redis. Reason: X.","provenance":{"source_agent":"agent-a","event_id":"evt-dynamo","observed_at":"2026-09-18T10:00:00Z"},"reasons":["workspace match","kind priority: 4","1 query term matches","subject match","current truth"],"estimated_tokens":9,"raw_handle":"artifact://demo/hash-dynamo","status":"current"}],"token_usage":{"budget":1000,"selected":9,"tokenizer":"o200k_base","is_proxy":true}}
 ```
 
 Selection is deterministic lexical matching over current memories in the
-requested workspace. Superseded memories are excluded from current context.
+requested workspace. Current decisions and state receive deterministic priority; subject matches and selection reasons are explicit. Duplicate packet items are removed, and superseded memories are excluded from current context.
 Token usage counts selected evidence content with `o200k_base`; it is a labelled
 proxy and does not count full serialized packet overhead.
 
