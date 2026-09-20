@@ -4,7 +4,7 @@ Base URL is local service root. Protected endpoints require `Authorization: Bear
 
 | Endpoint | Use | Fixture |
 |---|---|---|
-| `POST /v1/events` | append/promote event | `fixtures/api/event-request.json` |
+| `POST /v1/events` | append and deterministically promote typed events | `fixtures/api/event-request.json`, `fixtures/api/event-response.json` |
 | `POST /v1/memories` | explicit typed memory | `fixtures/api/memory-request.json` |
 | `GET /v1/memories?workspace_id=demo&status=current` | current/history list | `fixtures/api/memories.json` |
 | `GET /v1/activity?workspace_id=demo` | event activity | `fixtures/api/activity.json` |
