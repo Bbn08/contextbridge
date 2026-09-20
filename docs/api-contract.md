@@ -27,7 +27,8 @@ Optional: `subject`, `raw_evidence`.
 
 ## `GET /v1/memories?workspace_id=demo&status=current&limit=100`
 
-Returns serialized `Memory` objects. `status` may be `current`, `superseded`,
+Returns a JSON array of serialized `Memory` objects.
+The current endpoint has no cursor wrapper or pagination cursor; `limit` bounds the returned array. `status` may be `current`, `superseded`,
 `stale`, or `conflicted`. Omit it to list all workspace memories.
 
 Each memory contains nested `provenance` and `evidence` objects. Historical
