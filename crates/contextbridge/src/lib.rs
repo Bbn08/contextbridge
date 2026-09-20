@@ -15,6 +15,7 @@ use std::{collections::HashMap, sync::OnceLock};
 use thiserror::Error;
 use uuid::Uuid;
 
+pub mod aws;
 pub mod test_support;
 
 pub const DEFAULT_MAX_TOKENS: usize = 1_000;
@@ -921,6 +922,44 @@ pub async fn default_app() -> Result<Router, DomainError> {
     a.insert("agent-a-token".into(), AgentId("agent-a".into()));
     a.insert("agent-b-token".into(), AgentId("agent-b".into()));
     local_app("sqlite://data/contextbridge.db?mode=rwc", a).await
+}
+
+pub async fn configured_app() -> Result<Router, DomainError> {
+    let config = aws::AwsBackendConfig::from_env()?;
+    let mut auth = HashMap::new();
+    auth.insert("agent-a-token".into(), AgentId("agent-a".into()));
+    auth.insert("agent-b-token".into(), AgentId("agent-b".into()));
+    match config.mode {
+        aws::StorageMode::Local => default_app().await,
+        aws::StorageMode::Aws => {
+            let sdk = match config.region {
+                Some(region) => {
+                    aws_config::defaults(aws_config::BehaviorVersion::latest())
+                        .region(aws_sdk_dynamodb::config::Region::new(region))
+                        .load()
+                        .await
+                }
+                None => {
+                    aws_config::defaults(aws_config::BehaviorVersion::latest())
+                        .load()
+                        .await
+                }
+            };
+            let evidence = std::sync::Arc::new(aws::S3EvidenceStore::new(
+                aws_sdk_s3::Client::new(&sdk),
+                config.s3_bucket.expect("AWS config validated bucket"),
+            ));
+            let storage = aws::DynamoDbStorage::new(
+                aws_sdk_dynamodb::Client::new(&sdk),
+                config.dynamodb_table.expect("AWS config validated table"),
+                evidence,
+            );
+            Ok(app(AppState {
+                storage: std::sync::Arc::new(storage),
+                tokens: std::sync::Arc::new(auth),
+            }))
+        }
+    }
 }
 
 #[cfg(test)]
