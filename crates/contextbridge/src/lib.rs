@@ -11,11 +11,15 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize, de::DeserializeOwned};
 use serde_json::json;
 use sqlx::{Row, SqlitePool, sqlite::SqlitePoolOptions};
-use std::{collections::HashMap, sync::OnceLock};
+use std::{
+    collections::{HashMap, HashSet},
+    sync::OnceLock,
+};
 use thiserror::Error;
 use uuid::Uuid;
 
 pub mod aws;
+pub mod promotion;
 pub mod test_support;
 
 pub const DEFAULT_MAX_TOKENS: usize = 1_000;
@@ -135,6 +139,7 @@ pub struct EventInput {
     pub content: String,
     pub observed_at: Option<DateTime<Utc>>,
     pub raw_evidence: Option<String>,
+    #[serde(default)]
     pub promote: bool,
     pub supersedes_memory_id: Option<MemoryId>,
 }
@@ -157,6 +162,7 @@ pub struct EventRecord {
 }
 #[derive(Clone, Debug, Serialize)]
 pub struct EventOutcome {
+    pub outcome: String,
     pub event_id: EventId,
     pub promoted_memory_id: Option<MemoryId>,
     pub raw_handle: Option<RawEvidenceHandle>,
@@ -315,10 +321,11 @@ pub struct LocalSqliteStorage {
     pool: SqlitePool,
 }
 const SCHEMA: &str = r#"
-CREATE TABLE IF NOT EXISTS events(event_id TEXT PRIMARY KEY,workspace_id TEXT NOT NULL,agent_id TEXT NOT NULL,kind TEXT NOT NULL,subject TEXT,content TEXT NOT NULL,observed_at TEXT NOT NULL,received_at TEXT NOT NULL,promoted_memory_id TEXT UNIQUE);
+CREATE TABLE IF NOT EXISTS events(event_id TEXT PRIMARY KEY,workspace_id TEXT NOT NULL,agent_id TEXT NOT NULL,kind TEXT NOT NULL,subject TEXT,content TEXT NOT NULL,observed_at TEXT NOT NULL,received_at TEXT NOT NULL,promoted_memory_id TEXT);
 CREATE TABLE IF NOT EXISTS memories(memory_id TEXT PRIMARY KEY,workspace_id TEXT NOT NULL,kind TEXT NOT NULL,subject TEXT,content TEXT NOT NULL,status TEXT NOT NULL,source_agent TEXT NOT NULL,source_event_id TEXT,observed_at TEXT NOT NULL,evidence_id TEXT NOT NULL UNIQUE,raw_handle TEXT NOT NULL UNIQUE,superseded_by TEXT);
 CREATE TABLE IF NOT EXISTS raw_evidence(evidence_id TEXT PRIMARY KEY,workspace_id TEXT NOT NULL,raw_handle TEXT NOT NULL UNIQUE,content BLOB NOT NULL);
 CREATE TABLE IF NOT EXISTS supersessions(old_memory_id TEXT PRIMARY KEY,new_memory_id TEXT NOT NULL,workspace_id TEXT NOT NULL,reason TEXT NOT NULL,created_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS schema_meta(version INTEGER PRIMARY KEY);
 CREATE INDEX IF NOT EXISTS memories_scope ON memories(workspace_id,status);
 "#;
 impl LocalSqliteStorage {
@@ -331,6 +338,33 @@ impl LocalSqliteStorage {
         for s in SCHEMA.split(';').filter(|s| !s.trim().is_empty()) {
             sqlx::query(s)
                 .execute(&pool)
+                .await
+                .map_err(|e| DomainError::Storage(e.to_string()))?;
+        }
+        let version: Option<i64> = sqlx::query_scalar("SELECT max(version) FROM schema_meta")
+            .fetch_one(&pool)
+            .await
+            .map_err(|e| DomainError::Storage(e.to_string()))?;
+        if version.unwrap_or(0) < 2 {
+            let mut tx = pool
+                .begin()
+                .await
+                .map_err(|e| DomainError::Storage(e.to_string()))?;
+            sqlx::query("CREATE TABLE events_new(event_id TEXT PRIMARY KEY,workspace_id TEXT NOT NULL,agent_id TEXT NOT NULL,kind TEXT NOT NULL,subject TEXT,content TEXT NOT NULL,observed_at TEXT NOT NULL,received_at TEXT NOT NULL,promoted_memory_id TEXT)").execute(&mut *tx).await.map_err(|e| DomainError::Storage(e.to_string()))?;
+            sqlx::query("INSERT INTO events_new SELECT event_id,workspace_id,agent_id,kind,subject,content,observed_at,received_at,promoted_memory_id FROM events").execute(&mut *tx).await.map_err(|e| DomainError::Storage(e.to_string()))?;
+            sqlx::query("DROP TABLE events")
+                .execute(&mut *tx)
+                .await
+                .map_err(|e| DomainError::Storage(e.to_string()))?;
+            sqlx::query("ALTER TABLE events_new RENAME TO events")
+                .execute(&mut *tx)
+                .await
+                .map_err(|e| DomainError::Storage(e.to_string()))?;
+            sqlx::query("INSERT INTO schema_meta(version) VALUES (2)")
+                .execute(&mut *tx)
+                .await
+                .map_err(|e| DomainError::Storage(e.to_string()))?;
+            tx.commit()
                 .await
                 .map_err(|e| DomainError::Storage(e.to_string()))?;
         }
@@ -608,6 +642,7 @@ impl Storage for LocalSqliteStorage {
                     },
                     outcome: promoted.map(|x| EventOutcome {
                         event_id: id,
+                        outcome: "PROMOTED".into(),
                         promoted_memory_id: Some(x),
                         raw_handle: None,
                     }),

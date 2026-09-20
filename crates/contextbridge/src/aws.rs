@@ -682,6 +682,7 @@ fn decode_activity(item: HashMap<String, AttributeValue>) -> Result<ActivityReco
         },
         outcome: promoted.map(|memory_id| EventOutcome {
             event_id: id,
+            outcome: "PROMOTED".into(),
             promoted_memory_id: Some(memory_id),
             raw_handle: None,
         }),
