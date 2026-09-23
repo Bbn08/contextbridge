@@ -627,7 +627,7 @@ impl Storage for DynamoDbStorage {
             .into_iter()
             .map(decode_activity)
             .collect::<Result<Vec<_>, _>>()?;
-        records.sort_by(|a, b| b.event.received_at.cmp(&a.event.received_at));
+        records.sort_by_key(|a| std::cmp::Reverse(a.event.received_at));
         records.truncate(limit.min(200) as usize);
         Ok(records)
     }
