@@ -3,9 +3,9 @@
 Owner: Prathick. Bhuvan owns the backend observability and contract surfaces
 needed to measure the system.
 
-This directory contains benchmark specifications and a preparation/execution harness. No benchmark has been
-run in Milestone 1. Do not add performance claims to product or README docs
-without reproducible raw results.
+This directory contains benchmark specifications and a deterministic engineering
+runner. Raw JSONL output is required for any interpretation; no performance
+claim is implied by a run.
 
 ## Experimental arms
 
@@ -41,3 +41,37 @@ benchmarks/runners/run-arm.sh --arm contextbridge --output /tmp/contextbridge-re
 ```
 
 The command receives CONTEXTBRIDGE_BENCHMARK_ARM and CONTEXTBRIDGE_BENCHMARK_INPUT. The result keeps metric fields null until the evaluator records measured values. Use the same command, model, repository revision, environment and task for all three arms.
+
+## Engineering baseline runner
+
+Run real local product path across five scenarios and dataset sizes 10, 100
+and 1,000:
+
+```bash
+cargo run -p contextbridge --bin engineering_benchmark -- --output benchmarks/results/engineering-baseline.jsonl
+```
+
+Runner uses existing in-process HTTP API and local SQLite. It emits one JSONL
+row per scenario, size and arm (45 rows by default), retaining selected
+evidence and raw handles. `benchmarks/results/` is ignored so raw artifacts
+are not silently committed.
+
+Scenarios: supersession, relevance, workspace isolation, duplication and token
+pressure.
+
+Formulas:
+
+- required-evidence recall = required selected / required available
+- context precision = relevant selected / total selected
+- stale evidence rate = stale selected / total selected
+- duplicate evidence count = repeated normalized identities after first occurrence
+- workspace leakage = selected items whose workspace differs from target
+
+`task_success` requires complete required evidence, zero stale evidence,
+zero leakage, zero duplicates, raw recovery and model-visible tokens within the
+ContextBridge budget. Cold has no shared context; naive receives broad API
+history; ContextBridge uses the real bounded context endpoint. No LLM judge runs.
+
+Current memory retrieval caps list results at 200 records. The 1,000-memory
+run measures this current bounded-storage behavior and may expose retrieval
+weaknesses; the benchmark does not work around the limit.

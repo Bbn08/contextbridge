@@ -17,11 +17,11 @@ sqlx = { version = "0.9", features = ["runtime-tokio", "sqlite", "tls-rustls"] }
 thiserror = "2"
 tiktoken-rs = "0.6"
 tokio = { version = "1", features = ["macros", "rt-multi-thread", "sync", "net"] }
+tower = { version = "0.5", features = ["util"] }
 uuid = { version = "1", features = ["v4", "serde"] }
 
 [dev-dependencies]
 http-body-util = "0.1"
-tower = { version = "0.5", features = ["util"] }
 
 [features]
 aws-tests = []
