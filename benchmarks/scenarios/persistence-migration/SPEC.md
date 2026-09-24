@@ -1,6 +1,6 @@
 # Persistence migration scenario
 
-Status: specification only. Do not run yet.
+Status: implemented by `engineering_benchmark`; raw results remain local artifacts.
 
 ## Setup
 
